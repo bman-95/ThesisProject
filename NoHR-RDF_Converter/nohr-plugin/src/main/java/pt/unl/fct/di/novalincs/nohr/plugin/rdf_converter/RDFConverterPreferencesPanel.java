@@ -22,6 +22,7 @@ import java.io.IOException;
  */
 public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
 
+    private static final Dimension MAX_HEIGHT_DIMENSION = new Dimension(Integer.MAX_VALUE, 1);
 
     private File toconvertFile;
     private JTextField toconvertFileTextField;
@@ -67,7 +68,6 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
 
     }
 
-
     private boolean showConvertButton() {
         return (toconvertFile != null) && (selectedDriver != -1);
     }
@@ -84,7 +84,7 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
                 ODBCDriver chosen = getDriver(selectedDriver);
                 CommandLine cmd = CommandLine.parse(getConverterCommand(chosen));
 
-                    DefaultExecutor executor = new DefaultExecutor();
+                DefaultExecutor executor = new DefaultExecutor();
 
                 int exitValue = 0;
                 try {
@@ -93,9 +93,8 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
                     ex.printStackTrace();
                 }
                 if (exitValue == 0)
-                        JOptionPane.showMessageDialog(null, "OK");
+                    JOptionPane.showMessageDialog(null, "OK");
 
-                System.out.println(getConverterCommand(chosen));
             }
         });
 
@@ -131,7 +130,7 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
 
     private String getConverterCommand(ODBCDriver o) {
         return Commands.START.label + instance.getRDF2xDirectory() + " " + Commands.AND.label + Commands.MAVEN.label + Commands.INPUTCOMMAND.label +
-                toconvertFile.getAbsolutePath() + " " + Commands.DBCOMMAND.label + Commands.CONNECTIONURL.label + o.getDatabaseName() + Commands.CONNECTIONURLNECESSITY.label +
+                toconvertFile.getAbsolutePath() + " " + Commands.DBCOMMAND.label + Commands.DBURLCOMMAND.label + Commands.CONNECTIONURL.label + o.getDatabaseName() + Commands.CONNECTIONURLNECESSITY.label +
                 Commands.DBUSER.label + o.getUsername() + " " + Commands.DBPASSWORD.label + o.getPassword() + "\"";
     }
 
@@ -140,6 +139,7 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
 
         return driver;
     }
+
 
     private JButton createChooseRDFFileButton() {
         final JButton result = new JButton("Open...");
