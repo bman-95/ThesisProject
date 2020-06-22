@@ -151,7 +151,7 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
                 final JFileChooser fc = new JFileChooser();
 
                 fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("RDF files", "rdf");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("RDF files", "rdf", "ttl", "nt", "n3" , "nq");
 
                 fc.setFileFilter(filter);
 
