@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 enum Commands {
-    CONNECTIONURL("jdbc:mysql://127.0.0.1:3306/"),
-    CONNECTIONURLNECESSITY("?useTimezone=true&serverTimezone=GMT "),
+    CONNECTIONURL("jdbc:mysql://"),
+    CONNECTIONURLNECESSITY("?useTimezone=true&serverTimezone=GMT&rewriteBatchedStatements=true "),
     INPUTCOMMAND("--input.file "),
     AND("&& "),
     MAVEN("mvn exec:java -Dexec.args=\"convert "),

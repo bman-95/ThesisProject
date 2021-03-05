@@ -12,6 +12,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -24,6 +26,8 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
 
     private static final Dimension MAX_HEIGHT_DIMENSION = new Dimension(Integer.MAX_VALUE, 1);
 
+    private JTextField address;
+    private JTextField port;
     private File toconvertFile;
     private JTextField toconvertFileTextField;
     private JComboBox<ODBCDriver> drivers;
@@ -37,6 +41,8 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
         toconvertFileTextField.setEditable(false);
         drivers = new JComboBox(ODBCPreferences.getDrivers().toArray());
         selectedDriver = -1;
+        address = new JTextField(10);
+        port = new JTextField(10);
         convert = new JButton("Convert");
         instance = NoHRPreferences.getInstance();
     }
@@ -69,9 +75,13 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
     }
 
     private boolean showConvertButton() {
-        return (toconvertFile != null) && (selectedDriver != -1);
+        return (toconvertFile != null) && (selectedDriver != -1) && (!address.getText().equals("")) && (getPort()!=0);
     }
+    private int getPort() {
+        String text = port.getText();
 
+        return text.equals("") ? 0 : Integer.parseInt(text);
+    }
     private JComponent createConvertButton() {
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout());
@@ -82,7 +92,8 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ODBCDriver chosen = getDriver(selectedDriver);
-                CommandLine cmd = CommandLine.parse(getConverterCommand(chosen));
+                System.out.println(getConverterCommand(chosen,address,port));
+                CommandLine cmd = CommandLine.parse(getConverterCommand(chosen, address, port));
 
                 DefaultExecutor executor = new DefaultExecutor();
 
@@ -119,7 +130,36 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
                 convert.setEnabled(showConvertButton());
             }
         });
+        panel.add(new JLabel("Enter host address"));
+        panel.add(address);
+        address.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                convert.setEnabled(showConvertButton());
+            }
+        });
+        panel.add(new JLabel("Enter Port"));
+        panel.add(port);
+        port.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (isaNumber(e) || onlyAllowedKeys(e)) {
+                    port.setEditable(true);
+                    convert.setEnabled(showConvertButton());
+                } else
+                    port.setEditable(false);
+            }
+        });
+
         return panel;
+    }
+
+    private boolean isaNumber(KeyEvent e) {
+        return e.getKeyChar() >= '0' && e.getKeyChar() <= '9';
+    }
+
+    private boolean onlyAllowedKeys(KeyEvent e) {
+        return e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT;
     }
 
     /*
@@ -128,9 +168,9 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
                 connectionName + connectionNameNecessity + dbuser + username + dbpassword + password;
     * */
 
-    private String getConverterCommand(ODBCDriver o) {
+    private String getConverterCommand(ODBCDriver o, JTextField address, JTextField port) {
         return Commands.START.label + instance.getRDF2xDirectory() + " " + Commands.AND.label + Commands.MAVEN.label + Commands.INPUTCOMMAND.label +
-                toconvertFile.getAbsolutePath() + " " + Commands.DBCOMMAND.label + Commands.DBURLCOMMAND.label + Commands.CONNECTIONURL.label + o.getDatabaseName() + Commands.CONNECTIONURLNECESSITY.label +
+                toconvertFile.getAbsolutePath() + " " + Commands.DBCOMMAND.label + Commands.DBURLCOMMAND.label + Commands.CONNECTIONURL.label + address.getText()+ ":" + Integer.parseInt(port.getText()) + "/" +  o.getDatabaseName() + Commands.CONNECTIONURLNECESSITY.label +
                 Commands.DBUSER.label + o.getUsername() + " " + Commands.DBPASSWORD.label + o.getPassword() + "\"";
     }
 
@@ -151,7 +191,7 @@ public class RDFConverterPreferencesPanel extends OWLPreferencesPanel {
                 final JFileChooser fc = new JFileChooser();
 
                 fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("RDF files", "rdf", "ttl", "nt", "n3" , "nq");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("RDF files", "rdf", "ttl", "nt", "n3", "nq");
 
                 fc.setFileFilter(filter);
 
